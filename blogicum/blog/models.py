@@ -106,3 +106,6 @@ class Comment(models.Model):
         verbose_name='Пользователь'
     )
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ('created_at',)

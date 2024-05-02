@@ -1,10 +1,20 @@
+from typing import Any
+from django.core.paginator import Paginator
 from django.db.models import Q
+from django.db.models.base import Model as Model
+from django.db.models.query import QuerySet
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
+from django.urls import reverse_lazy, reverse
+from django.views import generic
+from django.contrib.auth import get_user_model
 
-from blog.models import Post, Category
+from .models import Post, Category
+from .forms import UserEditForm
 
 
+User = get_user_model()
 POST_PER_PAGE = 5
 join_parameters = ('location', 'author', 'category')
 
@@ -59,3 +69,32 @@ def category_posts(request, category_slug):
         'posts': posts
     }
     return render(request, template_name, context)
+
+
+def profile_page(request, username):
+    profile = get_object_or_404(User, username=username)
+    posts = Post.objects.filter(author_id=profile.id)
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'profile': profile,
+        'page_obj': page_obj
+    }
+    print(request.user.id)
+    return render(request, 'blog/profile.html', context)
+
+
+class ProfileEditView(generic.UpdateView):
+    model = User
+    form_class = UserEditForm
+    template_name = 'blog/user.html'
+
+    def get_object(self, queryset: QuerySet[Any] | None = ...) -> Model:
+        return User.objects.get(pk=self.request.user.id)
+
+    def get_success_url(self) -> str:
+        return reverse('blog:profile', kwargs={'username': self.request.user.username})
+
+def create_post(request):
+    pass
