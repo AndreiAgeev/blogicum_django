@@ -1,0 +1,26 @@
+<article>
+  <ul>
+    <li>
+      Место: {{ post.location }}             
+    </li>
+    <li>
+      Дата: {{ post.date }}
+    </li>
+    <li>
+      Категория: 
+      <a href="{% url 'blog:category_posts' post.category %}">{{ post.category }}</a>
+    </li>
+  </ul>
+  {% with request.resolver_match.view_name as view_name %}
+    {% if view_name == 'blog:index' %}
+      <p>
+        {{ post.text|truncatewords:10 }}
+      </p>
+      <a href="{% url 'blog:post_detail' post_id %}">Читать полный текст</a>
+    {% elif view_name == 'blog:post_detail' %}
+      <p>
+        {{ post.text|linebreaksbr }}
+      </p>
+    {% endif %}
+  {% endwith %}
+</article>
