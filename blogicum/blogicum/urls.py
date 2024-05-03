@@ -19,7 +19,7 @@ urlpatterns = [
     path('auth/registration/', CreateView.as_view(
         template_name='registration/registration_form.html',
         form_class=CreateUserForm,
-        success_url=reverse_lazy('blog:profile'),
+        success_url=reverse_lazy('blog:index'),
         ),
         name='registration'
     ),

@@ -64,9 +64,6 @@ class Post(CoreModel):
             ' — можно делать отложенные публикации.'
         )
     )
-    comment_count = models.PositiveSmallIntegerField(
-        'Количество комментариев', default=0
-    )
     image = models.ImageField(
         'Изображение',
         blank=True,
@@ -92,11 +89,11 @@ class Post(CoreModel):
         verbose_name='Категория'
     )
 
-    def __str__(self) -> str:
-        return self.title
-    
     def get_absolute_url(self):
         return reverse('blog:post_detail', kwargs={'post_id': self.pk})
+
+    def __str__(self) -> str:
+        return self.title
 
     class Meta:
         verbose_name = 'публикация'
@@ -110,12 +107,13 @@ class Comment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Пользователь'
+        verbose_name='Пользователь',
+        related_name='comments'
     )
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comment'
+        related_name='comments',
     )
 
     class Meta:
