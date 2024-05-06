@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import Post, Category, Comment
+from .models import Category, Comment, Post
 
 User = get_user_model()
 
@@ -22,7 +22,10 @@ class UserEditForm(forms.ModelForm):
 
 
 class CreatePostForm(forms.ModelForm):
-    category = forms.ModelChoiceField(queryset=Category.objects, empty_label=None)
+    category = forms.ModelChoiceField(
+        queryset=Category.objects,
+        empty_label=None
+    )
 
     class Meta:
         model = Post
