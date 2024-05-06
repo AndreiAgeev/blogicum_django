@@ -92,10 +92,14 @@ def profile_page(request, username):
 
 def post_detail(request, post_id):
     template_name = 'blog/detail.html'
-    post = get_object_or_404(Post, pk=post_id)
+    post = get_object_or_404(Post.objects.select_related(
+        'location', 'author', 'category'
+    ), pk=post_id)
     if post.author != request.user:
         post = get_object_or_404(
-            Post.objects.exclude(
+            Post.objects.select_related(
+                'location', 'author', 'category'
+            ).exclude(
                 Q(pub_date__gte=timezone.now())
                 | Q(is_published=False)
                 | Q(category__is_published=False)
