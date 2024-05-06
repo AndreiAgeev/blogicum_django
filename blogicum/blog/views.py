@@ -7,7 +7,6 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.base import Model as Model
-from django.db.models.query import QuerySet
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -114,7 +113,7 @@ def post_detail(request, post_id):
 
 class OnlyAuthorMixin(UserPassesTestMixin):
 
-    def test_func(self) -> bool | None:
+    def test_func(self) -> bool:
         object = self.get_object()
         return object.author == self.request.user
 
@@ -124,7 +123,7 @@ class ProfileEditView(LoginRequiredMixin, generic.UpdateView):
     form_class = UserEditForm
     template_name = 'blog/user.html'
 
-    def get_object(self, queryset: QuerySet[Any] | None = ...) -> Model:
+    def get_object(self) -> Model:
         return User.objects.get(pk=self.request.user.id)
 
     def get_success_url(self) -> str:
