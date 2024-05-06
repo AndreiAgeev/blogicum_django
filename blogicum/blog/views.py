@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.db.models.base import Model as Model
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse
+from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.urls import reverse_lazy, reverse
@@ -30,9 +31,14 @@ def get_posts_qs(posts, *joins, **filters):
 
 
 class OnlyAuthorMixin(UserPassesTestMixin):
+
     def test_func(self) -> bool | None:
         object = self.get_object()
         return object.author == self.request.user
+    
+    # def get_login_url(self) -> str:
+    #     string = self.request.build_absolute_uri().split('/')
+    #     return ('/'.join(string[0:-2]) + '/')
 
 
 def index(request):
@@ -51,14 +57,27 @@ def index(request):
 
 def post_detail(request, post_id):
     template_name = 'blog/detail.html'
-    post = get_object_or_404(
-        Post.objects.exclude(
-            Q(pub_date__gte=timezone.now())
-            | Q(is_published=False)
-            | Q(category__is_published=False)
-        ),
-        pk=post_id
-    )
+    post = get_object_or_404(Post, pk=post_id)
+    if post.author != request.user:
+        post = get_object_or_404(
+            Post.objects.exclude(
+                Q(pub_date__gte=timezone.now())
+                | Q(is_published=False)
+                | Q(category__is_published=False)
+            ),
+            pk=post_id
+        )
+    # if get_object_or_404(Post, pk=post_id).author == request.user:
+    #     post = get_object_or_404(Post, pk=post_id)
+    # else:
+    #     post = get_object_or_404(
+    #         Post.objects.exclude(
+    #             Q(pub_date__gte=timezone.now())
+    #             | Q(is_published=False)
+    #             | Q(category__is_published=False)
+    #         ),
+    #         pk=post_id
+    #     )
     context = {'post': post}
     context['form'] = CommentForm()
     context['comments'] = post.comment.select_related('author')
@@ -141,6 +160,16 @@ class EditPostView(OnlyAuthorMixin, generic.UpdateView):
     form_class = CreatePostForm
     template_name = 'blog/create.html'
     pk_url_kwarg = 'post_id'
+    redirect_field_name = None
+
+    # def get_login_url(self) -> str:
+    #     object = self.get_object()
+    #     return reverse_lazy('blog:post_detail', args=[object.id])
+
+    def handle_no_permission(self) -> HttpResponseRedirect:
+        object = self.get_object()
+        return redirect('blog:post_detail', post_id=object.id)
+
 
 
 class DeletePostView(OnlyAuthorMixin, generic.DeleteView):
@@ -148,6 +177,7 @@ class DeletePostView(OnlyAuthorMixin, generic.DeleteView):
     template_name = 'blog/create.html'
     success_url = reverse_lazy('blog:index')
     pk_url_kwarg = 'post_id'
+    redirect_field_name = None
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)

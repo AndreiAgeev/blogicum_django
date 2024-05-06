@@ -6,9 +6,9 @@ from django.views.generic.edit import CreateView
 
 from blog.forms import CreateUserForm
 
-handler403 = 'pages.views.access_denied'
+#handler403 = 'pages.views.access_denied'
 handler404 = 'pages.views.page_not_found'
-handler400 = 'pages.views.server_internal_error'
+handler500 = 'pages.views.server_internal_error'
 
 
 urlpatterns = [

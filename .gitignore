@@ -149,4 +149,4 @@ dmypy.json
 media/
 sent_emails/
 static_dev/
-
+backups/

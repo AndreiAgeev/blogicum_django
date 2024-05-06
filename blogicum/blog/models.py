@@ -65,7 +65,7 @@ class Post(CoreModel):
         )
     )
     comment_count = models.PositiveSmallIntegerField(
-        'Количество комментариев', default=0
+        'Количество комментариев', default=0, blank=True
     )
     image = models.ImageField(
         'Изображение',
@@ -75,7 +75,7 @@ class Post(CoreModel):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Автор публикации'
+        verbose_name='Автор публикации',
     )
     location = models.ForeignKey(
         Location,
@@ -94,7 +94,7 @@ class Post(CoreModel):
 
     def __str__(self) -> str:
         return self.title
-    
+
     def get_absolute_url(self):
         return reverse('blog:post_detail', kwargs={'post_id': self.pk})
 
