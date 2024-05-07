@@ -85,7 +85,6 @@ def profile_page(request, username):
         'profile': profile,
         'page_obj': page_obj
     }
-    print(request.user.id)
     return render(request, 'blog/profile.html', context)
 
 
@@ -118,7 +117,18 @@ class OnlyAuthorMixin(UserPassesTestMixin):
         return object.author == self.request.user
 
 
-class ProfileEditView(LoginRequiredMixin, generic.UpdateView):
+class GetSuccessURLMixin:
+
+    def get_success_url(self) -> str:
+        return reverse(
+            'blog:profile',
+            kwargs={'username': self.request.user.username}
+        )
+
+
+class ProfileEditView(
+    LoginRequiredMixin, GetSuccessURLMixin, generic.UpdateView
+):
     model = User
     form_class = UserEditForm
     template_name = 'blog/user.html'
@@ -126,14 +136,10 @@ class ProfileEditView(LoginRequiredMixin, generic.UpdateView):
     def get_object(self) -> Model:
         return User.objects.get(pk=self.request.user.id)
 
-    def get_success_url(self) -> str:
-        return reverse(
-            'blog:profile',
-            kwargs={'username': self.request.user.username}
-        )
 
-
-class CreatePostView(LoginRequiredMixin, generic.CreateView):
+class CreatePostView(
+    LoginRequiredMixin, GetSuccessURLMixin, generic.CreateView
+):
     model = Post
     form_class = CreatePostForm
     template_name = 'blog/create.html'
@@ -141,12 +147,6 @@ class CreatePostView(LoginRequiredMixin, generic.CreateView):
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
-
-    def get_success_url(self) -> str:
-        return reverse(
-            'blog:profile',
-            kwargs={'username': self.request.user.username}
-        )
 
 
 class EditPostView(OnlyAuthorMixin, generic.UpdateView):
